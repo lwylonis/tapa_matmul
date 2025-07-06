@@ -1,9 +1,9 @@
-#include <tapa.h>
 #include <matmul.h>
 
 void matmul(tapa::mmap<float> A,
 	    tapa::mmap<float> B,
-    	    tapa::mmap<float> C) {
+    	    tapa::mmap<float> C,
+	    uint64_t kM, uint64_t kK, uint64_t kN) {
     
     //NOTE: row major storage is A[i][j] = A[i*kK + j]
 
