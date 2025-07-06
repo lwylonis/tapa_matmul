@@ -3,7 +3,7 @@
 
 #include <gflags/gflags.h> // for declaring command line flags
 
-#include <matmul.h>
+#include <src/matmul.h>
 
 using std::clog;
 using std::endl;
@@ -25,10 +25,10 @@ int main(int argc, char* argv[]) {
 	
     // builds A as all ones, B as all twos, and C as zeros
     for (uint64_t i = 0; i < kM*kK; ++i) {
-	A[i] = static_cast<float>(i);	
+	A[i] = static_cast<float>(1);	
     }    
     for (uint64_t i = 0; i < kK*kN; ++i) {
-	B[i] = static_cast<float>(i) * 2;	
+	B[i] = static_cast<float>(1) * 2;	
     }    
     for (uint64_t i = 0; i < kM*kN; ++i) {
 	C[i] = 0.f	
@@ -42,5 +42,30 @@ int main(int argc, char* argv[]) {
 	tapa::read_only_mmap<const float>(C), kM, kK, kN);
     clog << "kernel time: " << kernel_time_ns * 1e-9 << " s" << endl;
 
-        
+    // checking for errors...
+    uint64_t num_errors = 0;
+    const uint64_t threshold = 10;  // only report up to these errors
+    for (uint64_t i = 0; i < kM*kN; ++i) {
+        auto expected = 2 * kK;
+        auto actual = static_cast<uint64_t>(C[i]);
+        if (actual != expected) {
+            if (num_errors < threshold) {
+                clog << "expected: " << expected << ", actual: " << actual << endl;
+	    }
+	    else if (num_errors == threshold) {
+                clog << "...";
+	    }
+            ++num_errors;
+        }
+    }
+    if (num_errors == 0) {
+        clog << "PASS!" << endl;
+    }
+    else {
+        if (num_errors > threshold) {
+            clog << " (+" << (num_errors - threshold) << " more errors)" << endl;
+        }
+        clog << "FAIL!" << endl;
+    }
+    return num_errors > 0 ? 1 : 0;    
 }
