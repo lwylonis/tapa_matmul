@@ -3,13 +3,13 @@
 
 #include <gflags/gflags.h> // for declaring command line flags
 
-#include <src/matmul.h>
+#include <matmul.h>
 
 using std::clog;
 using std::endl;
 using std::vector;
 
-DEFINE_string(bitstream, "", "path to bitstream file, run csim if empty";
+DEFINE_string(bitstream, "", "path to bitstream file, run csim if empty");
 
 int main(int argc, char* argv[]) {
     gflags::ParseCommandLineFlags(&argc, &argv, /*remove_flags=*/true);
@@ -19,9 +19,9 @@ int main(int argc, char* argv[]) {
     const uint64_t kK = argc > 3 ? atoll(argv[2]) : 1024;
     const uint64_t kN = argc > 3 ? atoll(argv[3]) : 1024;
 
-    vector<float> a(kM*kK);
-    vector<float> b(kK*kN);
-    vector<float> c(kM*kN);
+    vector<float> A(kM*kK);
+    vector<float> B(kK*kN);
+    vector<float> C(kM*kN);
 	
     // builds A as all ones, B as all twos, and C as zeros
     for (uint64_t i = 0; i < kM*kK; ++i) {
@@ -31,7 +31,7 @@ int main(int argc, char* argv[]) {
 	B[i] = static_cast<float>(1) * 2;	
     }    
     for (uint64_t i = 0; i < kM*kN; ++i) {
-	C[i] = 0.f	
+	C[i] = 0.f;	
     }
 
     // runs kernel on arguments
@@ -39,7 +39,7 @@ int main(int argc, char* argv[]) {
 	matmul, FLAGS_bitstream, 
 	tapa::read_only_mmap<const float>(A),     
 	tapa::read_only_mmap<const float>(B),     
-	tapa::read_only_mmap<const float>(C), kM, kK, kN);
+	tapa::write_only_mmap<float>(C), kM, kK, kN);
     clog << "kernel time: " << kernel_time_ns * 1e-9 << " s" << endl;
 
     // checking for errors...
